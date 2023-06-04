@@ -1,36 +1,32 @@
 #!/usr/bin/node
+// using star wars API
 
-const mainUrl = 'https://swapi-api.hbtn.io/api/films/' + process.argv[2];
 const request = require('request');
+const FILMID = process.argv[2];
 
-// Main Request
-request(mainUrl, function (error, response, body) {
-  if (error) {
-    console.log(error);
-  } else {
-    const urlArray = JSON.parse(body).characters;
-    myAsyn(urlArray);
-  }
-});
+// Request URL
+const URL_BASE = 'https://swapi-api.hbtn.io/api/films';
 
-// Sub request function
-function subRequest (url) {
+function doRequest (url) {
   return new Promise(function (resolve, reject) {
-    request(url, function (error2, response2, body2) {
-      if (error2) {
-        reject(error2);
+    request(url, function (error, res, body) {
+      if (!error && res.statusCode === 200) {
+        resolve(JSON.parse(body));
       } else {
-        resolve(JSON.parse(body2).name);
+        reject(error);
       }
     });
   });
 }
 
-// Asynchronous function awaits for
-// sub request resolution after each iterations
-async function myAsyn (urlArray) {
-  for (const url of urlArray) {
-    const character = await subRequest(url);
-    console.log(character);
+// Usage:
+
+async function main (filmID) {
+  const res = await doRequest(`${URL_BASE}/${filmID}`);
+  for (const e of res.characters) {
+    const pj = await doRequest(e);
+    console.log(pj.name);
   }
 }
+
+main(FILMID);
