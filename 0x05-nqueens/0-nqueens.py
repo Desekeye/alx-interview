@@ -1,83 +1,68 @@
 #!/usr/bin/python3
-"""contains the nqueens code"""
+"""
+Solution to the nqueens problem
+"""
+import sys
 
-from sys import argv, exit
 
-
-def queens(N, i, j, my_list):
+def backtrack(r, n, cols, pos, neg, board):
     """
-    place queens recursively
-    :param N: chessboard dimension
-    :param i: row
-    :param j: column
-    :param my_list:
-    :return:n queens
+    backtrack function to find solution
     """
-    while i < N:
-        if validation(i, j, my_list):
-            my_list.append([i, j])
-            if j == N - 1:
-                print(my_list)
-                my_list.pop()
-            else:
-                queens(N, 0, j + 1, my_list)
+    if r == n:
+        res = []
+        for l in range(len(board)):
+            for k in range(len(board[l])):
+                if board[l][k] == 1:
+                    res.append([l, k])
+        print(res)
+        return
 
-        i += 1
+    for c in range(n):
+        if c in cols or (r + c) in pos or (r - c) in neg:
+            continue
 
-    if len(my_list) > 0:
-        my_list.pop()
+        cols.add(c)
+        pos.add(r + c)
+        neg.add(r - c)
+        board[r][c] = 1
 
-    return
+        backtrack(r+1, n, cols, pos, neg, board)
+
+        cols.remove(c)
+        pos.remove(r + c)
+        neg.remove(r - c)
+        board[r][c] = 0
 
 
-def validation(i, j, my_list):
+def nqueens(n):
     """
-    check if the position is valid
-    :param i: rows
-    :param j: columns
-    :param my_list: previously tested positions
-    :return: TRUE if valid, FALSE if not
+    Solution to nqueens problem
+    Args:
+        n (int): number of queens. Must be >= 4
+    Return:
+        List of lists representing coordinates of each
+        queen for all possible solutions
     """
-    rows = []
-    cols = []
-    diag1 = []
-    diag2 = []
+    cols = set()
+    pos_diag = set()
+    neg_diag = set()
+    board = [[0] * n for i in range(n)]
 
-    for elem in my_list:
-        # rows and columns
-        rows.append(elem[0])
-        cols.append(elem[1])
-
-        # diagonals
-        diag1.append(elem[0] + elem[1])
-        diag2.append(elem[1] - elem[0])
-
-    if i in rows or j in cols:
-        return False
-
-    if i + j in diag1 or j - i in diag2:
-        return False
-
-    return True
+    backtrack(0, n, cols, pos_diag, neg_diag, board)
 
 
 if __name__ == "__main__":
-
-    length = len(argv)
-    if length != 2:
+    n = sys.argv
+    if len(n) != 2:
         print("Usage: nqueens N")
-        exit(1)
-
-    if argv[1].isdigit() is False:
+        sys.exit(1)
+    try:
+        nn = int(n[1])
+        if nn < 4:
+            print("N must be at least 4")
+            sys.exit(1)
+        nqueens(nn)
+    except ValueError:
         print("N must be a number")
-        exit(1)
-
-    N = int(argv[1])
-
-    if N < 4:
-        print("N must be at least 4")
-        exit(1)
-
-    positions = []
-
-    queens(N, 0, 0, positions)
+        sys.exit(1)
