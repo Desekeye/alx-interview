@@ -1,36 +1,25 @@
 #!/usr/bin/node
-
-const mainUrl = 'https://swapi-api.hbtn.io/api/films/' + process.argv[2];
 const request = require('request');
+const movieId = process.argv[2];
+const options = {
+  url: 'https://swapi-api.hbtn.io/api/films/' + movieId,
+  method: 'GET'
+};
 
-// Main Request
-request(mainUrl, function (error, response, body) {
-  if (error) {
-    console.log(error);
-  } else {
-    const urlArray = JSON.parse(body).characters;
-    myAsyn(urlArray);
+request(options, function (error, response, body) {
+  if (!error) {
+    const characters = JSON.parse(body).characters;
+    printCharacters(characters, 0);
   }
 });
 
-// Sub request function
-function subRequest (url) {
-  return new Promise(function (resolve, reject) {
-    request(url, function (error2, response2, body2) {
-      if (error2) {
-        reject(error2);
-      } else {
-        resolve(JSON.parse(body2).name);
+function printCharacters (characters, index) {
+  request(characters[index], function (error, response, body) {
+    if (!error) {
+      console.log(JSON.parse(body).name);
+      if (index + 1 < characters.length) {
+        printCharacters(characters, index + 1);
       }
-    });
+    }
   });
-}
-
-// Asynchronous function awaits for
-// sub request resolution after each iterations
-async function myAsyn (urlArray) {
-  for (const url of urlArray) {
-    const character = await subRequest(url);
-    console.log(character);
-  }
 }
